@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+spec:
+  tolerations:
+    - effect: "NoSchedule"
+      key: "kubernetes.azure.com/scalesetpriority"
+      operator: "Equal"
+      value: "spot"
+  containers:
+    - name: spark-exec-container
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - mountPath: /mnt/sharedLibs
+          name: conf-volume
+  volumes:
+    - name: conf-volume
+      persistentVolumeClaim:
+        claimName: nfs-pvc-cloudflow

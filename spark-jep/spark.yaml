@@ -1,0 +1,49 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: spark-k8s
+  namespace: sdp-data-lakehouse-collection-app-idris52
+spec:
+  type: Scala
+  mode: cluster
+  image: "acrsparksdp.azurecr.io/spark:0.1"
+  imagePullPolicy: Always
+  mainClass: dzlab.ScalaSpacyExample
+  mainApplicationFile: "local:///opt/docker/lib/imec.spark-k8s-jep-0.1.jar"
+  sparkVersion: "3.1.2"
+  restartPolicy:
+    type: Never
+  volumes:
+    - name: "test-volume"
+      hostPath:
+        path: "/tmp"
+        type: Directory
+    - name: conf-volume
+      persistentVolumeClaim:
+        claimName: nfs-pvc-cloudflow
+  driver:
+    kubernetesMaster: "https://kubernetes.default.svc:443"
+    cores: 1
+    coreLimit: "1200m"
+    memory: "4g"
+    labels:
+      version: 3.1.2
+      app: spacy
+    serviceAccount: spark-operator-spark
+    volumeMounts:
+      - name: "test-volume"
+        mountPath: "/tmp"
+      - mountPath: /mnt/sharedLibs
+        name: conf-volume
+  executor:
+    cores: 1
+    instances: 2
+    memory: "6g"
+    image: "acrsparksdp.azurecr.io/spark:0.1"
+    labels:
+      version: 3.1.2
+    volumeMounts:
+      - name: "test-volume"
+        mountPath: "/tmp"
+      - mountPath: /mnt/sharedLibs
+        name: conf-volume
